@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Report Detail{% endblock %}
+{% block content %}
+<h1>Report #{{ report.id }}</h1>
+<p class="text-muted">US-24 stub. See <code>moderation/views.py:report_detail</code>.</p>
+<p><strong>Reporter:</strong> {{ report.reporter.username }}</p>
+<p><strong>Target:</strong> {{ report.target_user|default:report.target_job }}</p>
+<p><strong>Reason:</strong> {{ report.reason }}</p>
+<p><strong>Status:</strong> {{ report.get_status_display }}</p>
+<p class="text-muted">TODO: add a form to change status and, if warranted, deactivate the target job (US-22) or user account.</p>
+{% endblock %}

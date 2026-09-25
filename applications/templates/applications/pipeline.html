@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Applicant Pipeline{% endblock %}
+{% block content %}
+<h1>Applicant Pipeline</h1>
+<p class="text-muted">US-13 stub: Kanban board by stage. See <code>applications/views.py:pipeline</code>.</p>
+<div class="row">
+    {% for status_value, status_label in applications.model.Status.choices %}
+    <div class="col">
+        <h5>{{ status_label }}</h5>
+        <div class="list-group">
+            {% for application in applications %}
+                {% if application.status == status_value %}
+                <a class="list-group-item list-group-item-action" href="{% url 'applications:applicant_detail' application.id %}">
+                    {{ application.applicant.username }} &mdash; {{ application.job.title }}
+                </a>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

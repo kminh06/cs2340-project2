@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Saved Jobs{% endblock %}
+{% block content %}
+<h1>Saved Jobs</h1>
+<p class="text-muted">US-10 stub: compare saved jobs side by side. See <code>cart/views.py</code>.</p>
+<table class="table">
+    <thead><tr><th>Job</th><th>Company</th><th>Salary</th><th>Work Type</th><th></th></tr></thead>
+    <tbody>
+        {% for saved in saved_jobs %}
+        <tr>
+            <td><a href="{% url 'jobs:job_detail' saved.job.id %}">{{ saved.job.title }}</a></td>
+            <td>{{ saved.job.company }}</td>
+            <td>{{ saved.job.salary_range_display }}</td>
+            <td>{{ saved.job.get_work_type_display }}</td>
+            <td><a href="{% url 'cart:remove_job' saved.job.id %}">Remove</a></td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5">No saved jobs yet.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Search Candidates{% endblock %}
+{% block content %}
+<h1>Search Candidates</h1>
+<p class="text-muted">US-12 stub: filter by skills, location, projects. See <code>profiles/views.py:candidate_search</code>.</p>
+<p class="text-muted">TODO: results must go through <code>profiles.privacy.get_visible_profile_data</code>.</p>
+<ul class="list-group">
+    {% for candidate in candidates %}
+        <li class="list-group-item">{{ candidate.headline|default:"(no headline yet)" }} &mdash; {{ candidate.user.username }}</li>
+    {% empty %}
+        <li class="list-group-item">No public candidate profiles yet.</li>
+    {% endfor %}
+</ul>
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}{{ job.title }}{% endblock %}
+{% block content %}
+<h1>{{ job.title }}</h1>
+<h5 class="text-muted">{{ job.company }} &mdash; {{ job.get_work_type_display }}</h5>
+<p>{{ job.office_address }}</p>
+<p><strong>Salary:</strong> {{ job.salary_range_display }}</p>
+<p><strong>Visa sponsorship:</strong> {{ job.visa_sponsorship|yesno:"Yes,No" }}</p>
+<p>{{ job.description|linebreaks }}</p>
+<p>
+    <strong>Skills:</strong>
+    {% for skill in job.skills.all %}<span class="badge bg-secondary">{{ skill.name }}</span>{% endfor %}
+</p>
+
+{% if user.is_authenticated and user.is_job_seeker %}
+<div class="mt-4">
+    <a class="btn btn-primary" href="{% url 'applications:apply_to_job' job.id %}">Apply (US-3)</a>
+    <a class="btn btn-outline-secondary" href="{% url 'cart:add_job' job.id %}">Save to Cart (US-10)</a>
+</div>
+{% endif %}
+{% endblock %}

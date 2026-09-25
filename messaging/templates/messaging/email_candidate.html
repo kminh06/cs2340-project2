@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% load form_extras %}
+{% block title %}Email Candidate{% endblock %}
+{% block content %}
+<h1>Email {{ candidate.username }}</h1>
+<p class="text-muted">US-15 stub: sends via Django's <code>send_mail</code> (console backend in dev). See <code>messaging/views.py:email_candidate</code>.</p>
+<form method="post" novalidate>
+    {% csrf_token %}
+    {% for field in form %}
+        <div class="mb-3">
+            <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field|add_class:"form-control" }}
+        </div>
+    {% endfor %}
+    <button type="submit" class="btn btn-primary">Send Email</button>
+</form>
+{% endblock %}

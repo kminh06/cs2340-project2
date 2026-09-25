@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Notifications{% endblock %}
+{% block content %}
+<h1>Notifications</h1>
+<p class="text-muted">US-16/US-17 stub. See <code>searches/views.py:notification_list</code>.</p>
+<ul class="list-group">
+    {% for notification in notifications %}
+        <li class="list-group-item {% if not notification.is_read %}fw-bold{% endif %}">{{ notification.message }}</li>
+    {% empty %}
+        <li class="list-group-item">No notifications yet.</li>
+    {% endfor %}
+</ul>
+{% endblock %}

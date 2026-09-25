@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}File a Report{% endblock %}
+{% block content %}
+<h1>Report a User or Job Posting</h1>
+<p class="text-muted">Feeds the admin review queue (US-24). See <code>moderation/views.py:file_report</code>.</p>
+<form method="post" novalidate>
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-danger">Submit Report</button>
+</form>
+{% endblock %}

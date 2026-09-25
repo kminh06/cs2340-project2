@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<h1>Welcome, {{ user.username }}</h1>
+<p class="text-muted">Role: {{ user.get_role_display }}</p>
+
+{% if user.is_job_seeker %}
+    <div class="list-group">
+        <a class="list-group-item list-group-item-action" href="{% url 'profiles:seeker_profile_edit' %}">My Profile (US-1, US-5)</a>
+        <a class="list-group-item list-group-item-action" href="{% url 'jobs:job_search' %}">Search Jobs (US-2)</a>
+        <a class="list-group-item list-group-item-action" href="{% url 'maps:job_map' %}">Job Map (US-7, US-8, US-9)</a>
+        <a class="list-group-item list-group-item-action" href="{% url 'cart:cart_detail' %}">Saved Jobs (US-10)</a>
+        <a class="list-group-item list-group-item-action" href="{% url 'applications:my_applications' %}">My Applications (US-4)</a>
+        <a class="list-group-item list-group-item-action" href="{% url 'recommendations:job_recommendations' %}">Recommended Jobs (US-6)</a>
+        <a class="list-group-item list-group-item-action" href="{% url 'messaging:inbox' %}">Messages (US-14)</a>
+    </div>
+{% elif user.is_recruiter %}
+    <div class="list-group">
+        <a class="list-group-item list-group-item-action" href="{% url 'profiles:recruiter_profile_edit' %}">Company Profile</a>
+        <a class="list-group-item list-group-item-action" href="{% url 'jobs:job_list_mine' %}">My Job Posts (US-11)</a>
+        <a class="list-group-item list-group-item-action" href="{% url 'jobs:job_create' %}">Post a Job (US-11)</a>
+        <a class="list-group-item list-group-item-action" href="{% url 'profiles:candidate_search' %}">Search Candidates (US-12)</a>
+        <a class="list-group-item list-group-item-action" href="{% url 'applications:pipeline' %}">Applicant Pipeline (US-13)</a>
+        <a class="list-group-item list-group-item-action" href="{% url 'maps:applicant_map' %}">Applicant Map (US-19)</a>
+        <a class="list-group-item list-group-item-action" href="{% url 'searches:saved_search_list' %}">Saved Searches (US-16)</a>
+        <a class="list-group-item list-group-item-action" href="{% url 'messaging:inbox' %}">Messages (US-14, US-15)</a>
+    </div>
+{% elif user.is_admin_role %}
+    <div class="list-group">
+        <a class="list-group-item list-group-item-action" href="{% url 'accounts:manage_users' %}">Manage Users &amp; Roles (US-21)</a>
+        <a class="list-group-item list-group-item-action" href="{% url 'moderation:job_moderation_list' %}">Moderate Job Posts (US-22)</a>
+        <a class="list-group-item list-group-item-action" href="{% url 'moderation:report_list' %}">Review Reports (US-24)</a>
+        <a class="list-group-item list-group-item-action" href="{% url 'moderation:export_csv' %}">Export CSV (US-23)</a>
+    </div>
+{% endif %}
+{% endblock %}

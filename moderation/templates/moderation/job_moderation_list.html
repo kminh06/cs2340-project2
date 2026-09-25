@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Moderate Job Posts{% endblock %}
+{% block content %}
+<h1>Moderate Job Posts</h1>
+<p class="text-muted">US-22 stub: deactivate/remove postings that violate policy. See <code>moderation/views.py:job_moderation_list</code>.</p>
+<table class="table">
+    <thead><tr><th>Title</th><th>Company</th><th>Posted By</th><th>Active</th><th></th></tr></thead>
+    <tbody>
+        {% for job in jobs %}
+        <tr>
+            <td>{{ job.title }}</td>
+            <td>{{ job.company }}</td>
+            <td>{{ job.posted_by.username }}</td>
+            <td>{{ job.is_active }}</td>
+            <td><a href="{% url 'moderation:job_deactivate' job.id %}">Deactivate</a></td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5">No jobs posted.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

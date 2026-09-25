@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% load form_extras %}
+{% block title %}Conversation{% endblock %}
+{% block content %}
+<h1>Conversation</h1>
+<p class="text-muted">US-14 stub: see <code>messaging/views.py:conversation_detail</code>.</p>
+<div class="mb-4">
+    {% for message in conversation.messages.all %}
+        <div class="mb-2"><strong>{{ message.sender.username }}:</strong> {{ message.body }}</div>
+    {% empty %}
+        <p>No messages yet.</p>
+    {% endfor %}
+</div>
+<form method="post" novalidate>
+    {% csrf_token %}
+    {{ form.body|add_class:"form-control" }}
+    <button type="submit" class="btn btn-primary mt-2">Send</button>
+</form>
+{% endblock %}

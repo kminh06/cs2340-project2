@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}My Job Posts{% endblock %}
+{% block content %}
+<h1>My Job Posts</h1>
+<a class="btn btn-primary mb-3" href="{% url 'jobs:job_create' %}">Post a new job</a>
+<div class="list-group">
+    {% for job in jobs %}
+        <a class="list-group-item list-group-item-action" href="{% url 'jobs:job_edit' job.pk %}">
+            {{ job.title }} {% if not job.is_active %}<span class="badge bg-secondary">Inactive</span>{% endif %}
+        </a>
+    {% empty %}
+        <p>You haven't posted any jobs yet.</p>
+    {% endfor %}
+</div>
+{% endblock %}

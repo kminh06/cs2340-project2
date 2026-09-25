@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Job Board{% endblock %}
+{% block content %}
+<div class="p-5 mb-4 bg-light rounded-3">
+    <h1 class="display-5 fw-bold">Find your next role. Find your next hire.</h1>
+    <p class="col-md-8 fs-4">
+        A job board connecting Job Seekers, Recruiters, and Administrators,
+        with map-based job and applicant discovery.
+    </p>
+    <a class="btn btn-primary btn-lg me-2" href="{% url 'accounts:signup' %}">Get started</a>
+    <a class="btn btn-outline-secondary btn-lg" href="{% url 'accounts:login' %}">Log in</a>
+</div>
+<div class="row">
+    <div class="col-md-4">
+        <h3>Job Seekers</h3>
+        <p>Build a profile, search and map nearby jobs, apply with a tailored note, and track your status.</p>
+    </div>
+    <div class="col-md-4">
+        <h3>Recruiters</h3>
+        <p>Post roles, search candidates, run a Kanban pipeline, and message applicants.</p>
+    </div>
+    <div class="col-md-4">
+        <h3>Administrators</h3>
+        <p>Manage users and roles, moderate postings, and export reporting data.</p>
+    </div>
+</div>
+{% endblock %}

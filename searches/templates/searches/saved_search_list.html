@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Saved Searches{% endblock %}
+{% block content %}
+<h1>Saved Searches</h1>
+<p class="text-muted">US-16 stub: save filters, get notified of new matches. See <code>searches/views.py</code>.</p>
+<div class="list-group mb-3">
+    {% for saved_search in saved_searches %}
+        <div class="list-group-item">{{ saved_search.name }} &mdash; {{ saved_search.filters }}</div>
+    {% empty %}
+        <p>No saved searches yet.</p>
+    {% endfor %}
+</div>
+<a class="btn btn-outline-secondary" href="{% url 'searches:notification_list' %}">View Notifications</a>
+{% endblock %}

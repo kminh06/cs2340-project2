@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Pin Office Location{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" />
+<style>#pin-map { height: 400px; width: 100%; }</style>
+{% endblock %}
+{% block content %}
+<h1>Pin Office Location: {{ job.title }}</h1>
+<p class="text-muted">
+    US-18 stub: drag the marker to set the office's lat/lng. See
+    <code>maps/views.py:job_location_pin</code>. TODO: submit the dragged
+    coordinates back to <code>jobs:job_edit</code> instead of this
+    standalone page.
+</p>
+<div id="pin-map"></div>
+{% endblock %}
+{% block extra_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    const startLat = {{ job.latitude|default:"33.7490" }};
+    const startLng = {{ job.longitude|default:"-84.3880" }};
+    const map = L.map('pin-map').setView([startLat, startLng], 12);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+    const marker = L.marker([startLat, startLng], { draggable: true }).addTo(map);
+    // TODO(US-18): on marker dragend, POST marker.getLatLng() back to the
+    // server (e.g. via a hidden form or fetch()) to update Job.latitude/longitude.
+</script>
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Applicant Detail{% endblock %}
+{% block content %}
+<h1>Applicant: {{ application.applicant.username }}</h1>
+<p class="text-muted">US-20 stub: candidate profile + application details in one place. Profile fields below are already filtered through <code>profiles.privacy.get_visible_profile_data</code> (US-5).</p>
+
+<h4>Application</h4>
+<p><strong>Job:</strong> {{ application.job.title }}</p>
+<p><strong>Status:</strong> {{ application.get_status_display }}</p>
+<p><strong>Tailored note:</strong> {{ application.tailored_note|default:"(none)" }}</p>
+
+<h4>Profile</h4>
+{% if visible_profile.visible %}
+    <p><strong>Headline:</strong> {{ visible_profile.headline }}</p>
+    <p><strong>Summary:</strong> {{ visible_profile.summary }}</p>
+    {% if visible_profile.location_text %}<p><strong>Location:</strong> {{ visible_profile.location_text }}</p>{% endif %}
+    {% if visible_profile.contact_email %}<p><strong>Contact:</strong> {{ visible_profile.contact_email }}</p>{% endif %}
+{% else %}
+    <p>This candidate's profile is not visible to recruiters.</p>
+{% endif %}
+{% endblock %}

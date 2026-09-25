@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Messages{% endblock %}
+{% block content %}
+<h1>Messages</h1>
+<p class="text-muted">US-14 stub: recruiter&harr;candidate chat. See <code>messaging/views.py:inbox</code>.</p>
+<div class="list-group">
+    {% for conversation in conversations %}
+        <a class="list-group-item list-group-item-action" href="{% url 'messaging:conversation_detail' conversation.id %}">
+            Conversation #{{ conversation.id }}{% if conversation.job %} &mdash; {{ conversation.job.title }}{% endif %}
+        </a>
+    {% empty %}
+        <p>No conversations yet.</p>
+    {% endfor %}
+</div>
+{% endblock %}

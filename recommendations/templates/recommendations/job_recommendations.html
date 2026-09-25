@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Recommended Jobs{% endblock %}
+{% block content %}
+<h1>Recommended Jobs</h1>
+<p class="text-muted">US-6 stub: skill-overlap scoring in <code>recommendations/services.py:recommend_jobs_for_seeker</code>.</p>
+<div class="list-group">
+    {% for job in jobs %}
+        <a class="list-group-item list-group-item-action" href="{% url 'jobs:job_detail' job.pk %}">{{ job.title }} &mdash; {{ job.company }}</a>
+    {% empty %}
+        <p>No recommendations yet &mdash; add skills to your profile.</p>
+    {% endfor %}
+</div>
+{% endblock %}

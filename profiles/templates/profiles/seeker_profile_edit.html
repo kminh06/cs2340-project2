@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% load form_extras %}
+{% block title %}My Profile{% endblock %}
+{% block content %}
+<h1>My Profile</h1>
+<p class="text-muted">US-1: headline, skills, education, work experience, links. US-5: privacy settings below control what recruiters see.</p>
+
+<form method="post" novalidate>
+    {% csrf_token %}
+
+    <h4 class="mt-4">Basics</h4>
+    {{ form.non_field_errors }}
+    {% for field in form.visible_fields %}
+        {% if field.name not in "is_public_to_recruiters,show_contact_info,show_education,show_experience,show_links,show_location" %}
+        <div class="mb-3">
+            <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field|add_class:"form-control" }}
+            {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+            <div class="text-danger small">{{ field.errors }}</div>
+        </div>
+        {% endif %}
+    {% endfor %}
+
+    <h4 class="mt-4">Education</h4>
+    {{ education_fs.management_form }}
+    {% for edu_form in education_fs %}
+        <div class="border rounded p-3 mb-2">
+            {{ edu_form.id }}
+            {{ edu_form.as_p }}
+        </div>
+    {% endfor %}
+
+    <h4 class="mt-4">Work Experience</h4>
+    {{ experience_fs.management_form }}
+    {% for exp_form in experience_fs %}
+        <div class="border rounded p-3 mb-2">
+            {{ exp_form.id }}
+            {{ exp_form.as_p }}
+        </div>
+    {% endfor %}
+
+    <h4 class="mt-4">Links</h4>
+    {{ link_fs.management_form }}
+    {% for link_form in link_fs %}
+        <div class="border rounded p-3 mb-2">
+            {{ link_form.id }}
+            {{ link_form.as_p }}
+        </div>
+    {% endfor %}
+
+    <h4 class="mt-4">Privacy (US-5)</h4>
+    <p class="text-muted">Controls what recruiters can see. Enforced by <code>profiles.privacy.get_visible_profile_data</code>.</p>
+    {% for field in form %}
+        {% if field.name in "is_public_to_recruiters,show_contact_info,show_education,show_experience,show_links,show_location" %}
+        <div class="form-check mb-2">
+            {{ field }}
+            <label class="form-check-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+        </div>
+        {% endif %}
+    {% endfor %}
+
+    <button type="submit" class="btn btn-primary mt-3">Save Profile</button>
+</form>
+{% endblock %}

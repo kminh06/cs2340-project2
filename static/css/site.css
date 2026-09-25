@@ -1,0 +1,10 @@
+/* Project-wide small overrides on top of Bootstrap 5 (CDN). */
+
+#job-map, #applicant-map, #pin-map {
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+}
+
+.navbar-brand {
+    font-weight: 600;
+}
