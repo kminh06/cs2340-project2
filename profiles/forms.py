@@ -5,12 +5,13 @@ from .models import Education, Experience, JobSeekerProfile, Link, RecruiterProf
 
 
 class JobSeekerProfileForm(forms.ModelForm):
-    """US-1 core profile fields + US-5 privacy toggles."""
+    """US-1 core profile fields.
 
-    skills = forms.CharField(
-        required=False,
-        help_text="Comma-separated list of skills, e.g. 'Python, SQL, React'.",
-    )
+    ``skills`` is a hidden comma-separated field. The profile page fills it
+    in with JavaScript from the skill chips the user adds and removes.
+    """
+
+    skills = forms.CharField(required=False, widget=forms.HiddenInput)
 
     class Meta:
         model = JobSeekerProfile
@@ -18,14 +19,6 @@ class JobSeekerProfileForm(forms.ModelForm):
             "headline",
             "summary",
             "location_text",
-            "latitude",
-            "longitude",
-            "is_public_to_recruiters",
-            "show_contact_info",
-            "show_education",
-            "show_experience",
-            "show_links",
-            "show_location",
         ]
         widgets = {
             "summary": forms.Textarea(attrs={"rows": 4}),
@@ -57,11 +50,15 @@ EducationFormSet = inlineformset_factory(
     JobSeekerProfile,
     Education,
     fields=["school", "degree", "field_of_study", "start_date", "end_date", "description"],
+    # Exactly one education box per profile.
     extra=1,
-    can_delete=True,
+    max_num=1,
+    validate_max=True,
+    can_delete=False,
     widgets={
         "start_date": forms.DateInput(attrs={"type": "date"}),
         "end_date": forms.DateInput(attrs={"type": "date"}),
+        "description": forms.Textarea(attrs={"rows": 3}),
     },
 )
 
@@ -77,11 +74,13 @@ ExperienceFormSet = inlineformset_factory(
         "is_current",
         "description",
     ],
-    extra=1,
+    # Rows are added in the browser with the + button (see seeker_profile_edit.html).
+    extra=0,
     can_delete=True,
     widgets={
         "start_date": forms.DateInput(attrs={"type": "date"}),
         "end_date": forms.DateInput(attrs={"type": "date"}),
+        "description": forms.Textarea(attrs={"rows": 3}),
     },
 )
 
@@ -89,7 +88,8 @@ LinkFormSet = inlineformset_factory(
     JobSeekerProfile,
     Link,
     fields=["label", "url"],
-    extra=1,
+    # Rows are added in the browser with the + button (see seeker_profile_edit.html).
+    extra=0,
     can_delete=True,
 )
 

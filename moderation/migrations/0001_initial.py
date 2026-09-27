@@ -29,7 +29,7 @@ class Migration(migrations.Migration):
             ],
             options={
                 'ordering': ['-created_at'],
-                'constraints': [models.CheckConstraint(condition=models.Q(models.Q(('target_job__isnull', True), ('target_user__isnull', False)), models.Q(('target_job__isnull', False), ('target_user__isnull', True)), _connector='OR'), name='report_has_exactly_one_target')],
+                'constraints': [models.CheckConstraint(check=models.Q(models.Q(('target_job__isnull', True), ('target_user__isnull', False)), models.Q(('target_job__isnull', False), ('target_user__isnull', True)), _connector='OR'), name='report_has_exactly_one_target')],
             },
         ),
     ]

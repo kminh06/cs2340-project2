@@ -1,0 +1,29 @@
+{% load form_extras %}
+{% comment %}
+Renders one formset form (an education, experience, or link entry) with
+Bootstrap styling. Hidden fields (id, profile) and the DELETE checkbox are
+rendered but not shown; the X button in seeker_profile_edit.html ticks DELETE.
+{% endcomment %}
+{% for hidden in entry.hidden_fields %}{{ hidden }}{% endfor %}
+{% if entry.DELETE %}<span class="d-none">{{ entry.DELETE }}</span>{% endif %}
+<div class="text-danger small">{{ entry.non_field_errors }}</div>
+<div class="row g-3">
+    {% for field in entry.visible_fields %}
+        {% if field.name != "DELETE" %}
+            {% if field.field.widget.input_type == "checkbox" %}
+                <div class="col-12">
+                    <div class="form-check">
+                        {{ field|add_class:"form-check-input" }}
+                        <label class="form-check-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    </div>
+                </div>
+            {% else %}
+                <div class="{% if field.name == 'description' %}col-12{% else %}col-md-6{% endif %}">
+                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field|add_class:"form-control" }}
+                    <div class="text-danger small">{{ field.errors }}</div>
+                </div>
+            {% endif %}
+        {% endif %}
+    {% endfor %}
+</div>

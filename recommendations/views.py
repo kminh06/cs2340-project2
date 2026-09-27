@@ -24,8 +24,9 @@ def candidate_recommendations(request, job_id):
     postings.
 
     TODO(US-17): 404 if the job isn't owned by request.user. Call
-    ``services.recommend_candidates_for_job(job)`` and render results using
-    ``profiles.privacy.get_visible_profile_data`` for each candidate.
+    ``services.recommend_candidates_for_job(job)`` and render each
+    candidate's profile through ``profiles.privacy.get_visible_profile_data``
+    (US-5 stub, currently shows everything).
     """
     job = get_object_or_404(Job, pk=job_id, posted_by=request.user)
     candidates = services.recommend_candidates_for_job(job)

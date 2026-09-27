@@ -17,7 +17,7 @@ from .models import JobSeekerProfile, RecruiterProfile
 @job_seeker_required
 def seeker_profile_edit(request):
     """US-1: create/edit the job seeker's profile (headline, skills,
-    education, experience, links) and US-5 privacy toggles.
+    education, experience, links).
 
     Fully implemented so the team can log in and test other features.
     """
@@ -84,9 +84,9 @@ def candidate_search(request):
 
     TODO(US-12): Build a filter form (skills multi-select, location/radius
     reusing maps.utils.haversine_distance, keyword search over profile
-    summary/experience). Results must be filtered through
-    profiles.privacy.get_visible_profile_data so hidden profiles/fields never
-    leak. Consider pagination for large result sets.
+    summary/experience). Render results through
+    profiles.privacy.get_visible_profile_data (US-5 stub, currently shows everything).
+    Consider pagination for large result sets.
     """
-    candidates = JobSeekerProfile.objects.filter(is_public_to_recruiters=True)
+    candidates = JobSeekerProfile.objects.all()
     return render(request, "profiles/candidate_search.html", {"candidates": candidates})

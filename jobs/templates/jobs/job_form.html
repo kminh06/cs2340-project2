@@ -1,20 +1,103 @@
 {% extends "base.html" %}
 {% load form_extras %}
 {% block title %}{% if job %}Edit Job{% else %}Post a Job{% endif %}{% endblock %}
+{% block extra_head %}
+<style>
+    .skill-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.35rem 0.4rem 0.35rem 0.75rem;
+        border: 1px solid #dee2e6;
+        border-radius: 0.375rem;
+        background: #f8f9fa;
+    }
+    .skill-chip .btn-close { font-size: 0.6rem; }
+</style>
+{% endblock %}
 {% block content %}
 <h1>{% if job %}Edit Job{% else %}Post a Job{% endif %}</h1>
-<form method="post" novalidate>
+<form method="post" id="job-form" novalidate>
     {% csrf_token %}
     {{ form.non_field_errors }}
-    {% for field in form %}
+    {% for field in form.visible_fields %}
         <div class="mb-3">
             <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-            {{ field|add_class:"form-control" }}
+            {% if field.field.widget.input_type == "select" %}
+                {{ field|add_class:"form-select" }}
+            {% else %}
+                {{ field|add_class:"form-control" }}
+            {% endif %}
             {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
             <div class="text-danger small">{{ field.errors }}</div>
         </div>
     {% endfor %}
-    <p class="text-muted">TODO(US-18): pin office location on a map instead of typing lat/lng by hand.</p>
+
+    {# ---------- Skills: chips + text box + plus button (same as seeker profile) ---------- #}
+    <label class="form-label" for="skill-input">Skills</label>
+    {{ form.skills }}  {# hidden comma-separated value the server saves #}
+    <div id="skill-chips" class="d-flex flex-wrap gap-2 mb-2"></div>
+    <div class="input-group" style="max-width: 420px;">
+        <input type="text" id="skill-input" class="form-control" placeholder="Add a skill, e.g. Python" aria-label="New skill">
+        <button type="button" id="skill-add" class="btn btn-outline-primary" aria-label="Add skill">+</button>
+    </div>
+    <div class="text-danger small mb-3">{{ form.skills.errors }}</div>
+
     <button type="submit" class="btn btn-primary">Save</button>
 </form>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+(function () {
+    const form = document.getElementById("job-form");
+
+    // Enter does not submit the form or add a skill. Only the + button adds
+    // a skill and only "Save" submits. The description textarea still gets newlines.
+    form.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" && e.target.tagName === "INPUT") {
+            e.preventDefault();
+        }
+    });
+
+    // The chips are the UI. The hidden "skills" input holds the same list as
+    // comma-separated text, which is what the Django form reads on save.
+    const hidden = document.getElementById("{{ form.skills.id_for_label }}");
+    const chipBox = document.getElementById("skill-chips");
+    const skillInput = document.getElementById("skill-input");
+    let skills = hidden.value.split(",").map(s => s.trim()).filter(Boolean);
+
+    function renderSkills() {
+        chipBox.innerHTML = "";
+        skills.forEach(function (name, i) {
+            const chip = document.createElement("span");
+            chip.className = "skill-chip";
+            chip.textContent = name;  // textContent, so skill text is never parsed as HTML
+            const x = document.createElement("button");
+            x.type = "button";
+            x.className = "btn-close";
+            x.setAttribute("aria-label", "Remove " + name);
+            x.addEventListener("click", function () {
+                skills.splice(i, 1);
+                renderSkills();
+            });
+            chip.appendChild(x);
+            chipBox.appendChild(chip);
+        });
+        hidden.value = skills.join(", ");
+    }
+
+    document.getElementById("skill-add").addEventListener("click", function () {
+        // Allow "Python, SQL" to add two chips at once. Skip duplicates.
+        skillInput.value.split(",").map(s => s.trim()).filter(Boolean).forEach(function (name) {
+            const exists = skills.some(s => s.toLowerCase() === name.toLowerCase());
+            if (!exists) skills.push(name);
+        });
+        skillInput.value = "";
+        skillInput.focus();
+        renderSkills();
+    });
+    renderSkills();
+})();
+</script>
 {% endblock %}
