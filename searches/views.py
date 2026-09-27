@@ -1,6 +1,7 @@
 from django.shortcuts import get_object_or_404, redirect, render
 
 from accounts.decorators import recruiter_required
+from jobs.models import Job
 
 from .models import Notification, SavedSearch
 

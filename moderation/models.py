@@ -38,7 +38,7 @@ class Report(models.Model):
         ordering = ["-created_at"]
         constraints = [
             models.CheckConstraint(
-                check=(
+                condition=(
                     models.Q(target_user__isnull=False, target_job__isnull=True)
                     | models.Q(target_user__isnull=True, target_job__isnull=False)
                 ),
