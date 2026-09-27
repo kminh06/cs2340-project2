@@ -1,5 +1,5 @@
-from django.shortcuts import get_object_or_404, render
-
+from django.shortcuts import get_object_or_404, redirect, render
+from django.contrib import messages
 from accounts.decorators import job_seeker_required, recruiter_required
 from jobs.models import Job
 from profiles.privacy import get_visible_profile_data
@@ -10,15 +10,22 @@ from .models import Application
 
 @job_seeker_required
 def apply_to_job(request, job_id):
-    """US-3: One-click apply with a tailored note.
-
-    TODO(US-3): Bind ``ApplicationForm`` to POST data. On valid submit,
-    create an ``Application(job=job, applicant=request.user)`` -- guard
-    against the unique (job, applicant) constraint with a friendly message
-    if they've already applied. Redirect to applications:my_applications.
-    """
+    """US-3: One-click apply with a tailored note."""
     job = get_object_or_404(Job, pk=job_id)
-    form = ApplicationForm()
+    if Application.objects.filter(job=job,applicant=request.user).exists():
+        messages.warning(request, "You already applied for this job.")
+        return redirect("applications:my_applications")
+    if request.method=="POST":
+        form = ApplicationForm(request.POST)
+        if form.is_valid():
+            application=form.save(commit=False)
+            application.job=job
+            application.applicant=request.user
+            application.save()
+            messages.success(request, "Your application was successfully submitted.")
+            return redirect("applications:my_applications")
+    else:
+        form = ApplicationForm()
     return render(request, "applications/apply.html", {"job": job, "form": form})
 
 

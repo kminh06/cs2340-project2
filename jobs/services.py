@@ -1,15 +1,10 @@
 """Business logic for the jobs app, kept out of views per project convention."""
+from django.db.models import Case, IntegerField, Value, When
 from .models import Job
 
 
 def search_jobs(cleaned_data):
-    """US-2: filter active jobs by the fields in a validated ``JobSearchForm``.
-
-    TODO(US-2): This currently only handles title/location text match, salary
-    range overlap, work type, and visa sponsorship. Extend the skills filter
-    to match against the Skill M2M (currently a naive icontains on skill
-    name) and consider ranking/sorting by relevance.
-    """
+    """US-2: filter active jobs by the fields in a validated ``JobSearchForm``."""
     qs = Job.objects.filter(is_active=True)
 
     title = cleaned_data.get("title")
@@ -24,7 +19,7 @@ def search_jobs(cleaned_data):
     if skills:
         names = [s.strip() for s in skills.split(",") if s.strip()]
         for name in names:
-            qs = qs.filter(skills__name__icontains=name)
+            qs = qs.filter(skills__name__iexact=name)
 
     salary_min = cleaned_data.get("salary_min")
     if salary_min:
@@ -41,4 +36,15 @@ def search_jobs(cleaned_data):
     if cleaned_data.get("visa_sponsorship"):
         qs = qs.filter(visa_sponsorship=True)
 
+    if title:
+        qs=qs.annotate(
+            relevance=Case(
+                When(title__iexact=title, then=Value(2)),
+                When(title__icontains=title, then=Value(1)),
+                default=Value(0),
+                output_field=IntegerField(),
+            )
+            ).order_by("-relevance","-created_at")
+    else:
+        qs=qs.order_by("-created_at")     
     return qs.distinct()

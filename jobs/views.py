@@ -1,10 +1,12 @@
 from django.contrib import messages
+from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
 
 from accounts.decorators import recruiter_required
 
 from .forms import JobForm, JobSearchForm
 from .models import Job
+from .services import search_jobs
 
 
 def job_search(request):
@@ -17,8 +19,16 @@ def job_search(request):
     result to ``jobs:job_detail`` and to ``cart:add_job`` (US-10).
     """
     form = JobSearchForm(request.GET or None)
-    jobs = Job.objects.none()
-    return render(request, "jobs/job_search.html", {"form": form, "jobs": jobs})
+    if form.is_valid():
+        jobs=search_jobs(form.cleaned_data)
+    else:
+        jobs = Job.objects.none()
+    paginator=Paginator(jobs,10)
+    page_num=request.GET.get("page")
+    page_obj=paginator.get_page(page_num)
+    copy_filter=request.GET.copy()
+    copy_filter.pop("page",None)
+    return render(request, "jobs/job_search.html", {"form": form, "jobs": page_obj, "page_obj": page_obj, "copy_filter":copy_filter.urlencode()},)
 
 
 def job_detail(request, pk):
