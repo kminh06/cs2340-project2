@@ -3,7 +3,7 @@
 {% block title %}Apply{% endblock %}
 {% block content %}
 <h1>Apply to {{ job.title }}</h1>
-<p class="text-muted">US-3 stub: one-click apply with a tailored note. See <code>applications/views.py:apply_to_job</code>.</p>
+<p class="text-muted"> Add a tailored note for the application</p>
 <form method="post" novalidate>
     {% csrf_token %}
     {% for field in form %}

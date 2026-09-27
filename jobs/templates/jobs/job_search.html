@@ -3,13 +3,32 @@
 {% block title %}Find Jobs{% endblock %}
 {% block content %}
 <h1>Find Jobs</h1>
-<p class="text-muted">US-2 stub: filters by title, skills, location, salary range, remote/on-site/hybrid, visa sponsorship. See <code>jobs/views.py:job_search</code> and <code>jobs/services.py:search_jobs</code>.</p>
+<p class="text-muted">Search for jobs by title, skills,location, salary range, work type remote/on-site, and visa sponsorship. </p>
 
 <form method="get" class="row g-3 mb-4">
     {% for field in form %}
         <div class="col-md-4">
+            {% if field.name == "visa_sponsorship" %}
+            <div class="form-check mt-4">
+                {{ field }}
+                <label class="form-check-label" for="{{field.id_for_label}}">
+                    {{field.label}}
+                </label>
+            </div>
+            {% else %}
             <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
             {{ field|add_class:"form-control" }}
+            {% if field.help_text %}
+                <small class="text-muted">
+                    {{ field.help_text }}
+                </small>
+            {% endif %}
+            {% endif %}
+            {% for error in field.errors %}
+                <div class="text-danger">
+                    {{ error }}
+                </div>
+            {% endfor %}
         </div>
     {% endfor %}
     <div class="col-12">
@@ -21,9 +40,38 @@
     {% for job in jobs %}
         <a class="list-group-item list-group-item-action" href="{% url 'jobs:job_detail' job.pk %}">
             {{ job.title }} &mdash; {{ job.company }}
+            <br> 
+             <small class="text-muted">{{job.office_address}}|{{job.get_work_type_display}}|{{job.salary_range_display}}</small>
         </a>
     {% empty %}
-        <p>No results yet &mdash; wire up jobs/services.py:search_jobs in the view.</p>
+        <p>No jobs match with your search</p>
     {% endfor %}
 </div>
+{% if page_obj.paginator.num_pages > 1 %}
+<nav class="mt-4">
+    <ul class="pagination">
+        {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?{% if copy_filter %}{{copy_filter}}&{% endif %}page={{page_obj.previous_page_number}}">
+                    Previous
+                </a>
+            </li>
+        {% endif %}
+        <li class="page-item disabled">
+            <span class="page-link">
+                Page {{page_obj.number}} of {{page_obj.paginator.num_pages}}
+            </span>
+        </li>
+        {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?{% if copy_filter %}{{copy_filter}}&{% endif %}page={{page_obj.next_page_number}}">
+                    Next
+                </a>
+            </li>
+        {% endif %}
+
+    </ul>
+</nav>
+
+{% endif %}
 {% endblock %}
