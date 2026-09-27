@@ -47,16 +47,16 @@ def recommend_candidates_for_job(job, limit=10):
     based on skill overlap.
 
     TODO(US-17): Placeholder scoring only counts shared Skill rows. Consider
-    only surfacing candidates who are ``is_public_to_recruiters`` (US-5,
-    already filtered below) and who haven't already applied. Must route any
-    profile fields shown through ``profiles.privacy.get_visible_profile_data``.
+    excluding candidates who have already applied. Once US-5 exists, filter
+    out hidden profiles here and show fields through
+    ``profiles.privacy.get_visible_profile_data``.
     """
     job_skills = list(job.skills.all())
     if not job_skills:
         return []
 
     scored = []
-    qs = JobSeekerProfile.objects.filter(is_public_to_recruiters=True).prefetch_related("skills")
+    qs = JobSeekerProfile.objects.all().prefetch_related("skills")
     for profile in qs:
         score = _skill_overlap_score(job_skills, profile.skills.all())
         if score > 0:

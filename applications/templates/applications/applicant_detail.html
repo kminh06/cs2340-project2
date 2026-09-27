@@ -2,7 +2,7 @@
 {% block title %}Applicant Detail{% endblock %}
 {% block content %}
 <h1>Applicant: {{ application.applicant.username }}</h1>
-<p class="text-muted">US-20 stub: candidate profile + application details in one place. Profile fields below are already filtered through <code>profiles.privacy.get_visible_profile_data</code> (US-5).</p>
+<p class="text-muted">US-20 stub: candidate profile + application details in one place. Profile fields below go through <code>profiles.privacy.get_visible_profile_data</code> (US-5, not implemented yet).</p>
 
 <h4>Application</h4>
 <p><strong>Job:</strong> {{ application.job.title }}</p>
@@ -16,6 +16,6 @@
     {% if visible_profile.location_text %}<p><strong>Location:</strong> {{ visible_profile.location_text }}</p>{% endif %}
     {% if visible_profile.contact_email %}<p><strong>Contact:</strong> {{ visible_profile.contact_email }}</p>{% endif %}
 {% else %}
-    <p>This candidate's profile is not visible to recruiters.</p>
+    <p>This candidate's profile is not available.</p>
 {% endif %}
 {% endblock %}

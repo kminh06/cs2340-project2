@@ -21,10 +21,7 @@ class Skill(models.Model):
 class JobSeekerProfile(models.Model):
     """US-1: Job seeker profile with headline, skills, education, links.
 
-    US-5: privacy fields below control what a recruiter can see; the single
-    source of truth for enforcing that is ``profiles.privacy.get_visible_profile_fields``
-    (see privacy.py), which every recruiter-facing view must call instead of
-    reading these flags directly.
+    US-5 privacy is not implemented yet; see profiles/privacy.py for the plan.
     """
 
     user = models.OneToOneField(
@@ -39,18 +36,10 @@ class JobSeekerProfile(models.Model):
     location_text = models.CharField(
         max_length=255, blank=True, help_text="Free-text city/region, e.g. 'Atlanta, GA'."
     )
+    # Not editable on the profile form. Kept for the applicant map (US-19).
     latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
 
-    # --- US-5 privacy settings ---
-    is_public_to_recruiters = models.BooleanField(
-        default=True, help_text="If off, recruiters cannot find or view this profile at all."
-    )
-    show_contact_info = models.BooleanField(default=False)
-    show_education = models.BooleanField(default=True)
-    show_experience = models.BooleanField(default=True)
-    show_links = models.BooleanField(default=True)
-    show_location = models.BooleanField(default=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

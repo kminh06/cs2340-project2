@@ -67,11 +67,10 @@ def applicant_map_data(request):
     """JSON endpoint of applicant map points for US-19.
 
     TODO(US-19): Scope to jobs owned by request.user, optionally filtered by
-    a ``job`` query param. Must respect US-5 privacy: only include an
-    applicant's location if their JobSeekerProfile has
-    ``is_public_to_recruiters`` and ``show_location`` set (see
-    profiles.privacy.get_visible_profile_data) -- do not leak hidden
-    locations onto the map.
+    a ``job`` query param. TODO(US-5): once privacy exists, skip applicants
+    whose location is hidden (see profiles.privacy). The profile form no longer asks for
+    latitude/longitude, so these need to be filled another way (for example
+    by geocoding ``location_text``).
     """
     applications = Application.objects.filter(job__posted_by=request.user).select_related(
         "applicant__seeker_profile"

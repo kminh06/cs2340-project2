@@ -1,64 +1,210 @@
 {% extends "base.html" %}
 {% load form_extras %}
 {% block title %}My Profile{% endblock %}
+{% block extra_head %}
+<style>
+    .skill-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.35rem 0.4rem 0.35rem 0.75rem;
+        border: 1px solid #dee2e6;
+        border-radius: 0.375rem;
+        background: #f8f9fa;
+    }
+    .skill-chip .btn-close { font-size: 0.6rem; }
+    .entry-card { position: relative; }
+    .entry-card > .btn-close { position: absolute; top: 0.75rem; right: 0.75rem; }
+</style>
+{% endblock %}
 {% block content %}
 <h1>My Profile</h1>
-<p class="text-muted">US-1: headline, skills, education, work experience, links. US-5: privacy settings below control what recruiters see.</p>
+<p class="text-muted">US-1: headline, skills, education, work experience, links. Every recruiter can see your full profile.</p>
+{# TODO(US-5): add a Privacy section here. See profiles/privacy.py. #}
 
-<form method="post" novalidate>
+<form method="post" id="profile-form" novalidate>
     {% csrf_token %}
-
-    <h4 class="mt-4">Basics</h4>
     {{ form.non_field_errors }}
+
+    {# ---------- Basics ---------- #}
+    <h4 class="mt-4">Basics</h4>
     {% for field in form.visible_fields %}
-        {% if field.name not in "is_public_to_recruiters,show_contact_info,show_education,show_experience,show_links,show_location" %}
         <div class="mb-3">
             <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
             {{ field|add_class:"form-control" }}
             {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
             <div class="text-danger small">{{ field.errors }}</div>
         </div>
-        {% endif %}
     {% endfor %}
 
+    {# ---------- Skills: chips + text box + plus button ---------- #}
+    <h4 class="mt-4">Skills</h4>
+    {{ form.skills }}  {# hidden comma-separated value the server saves #}
+    <div id="skill-chips" class="d-flex flex-wrap gap-2 mb-2"></div>
+    <div class="input-group" style="max-width: 420px;">
+        <input type="text" id="skill-input" class="form-control" placeholder="Add a skill, e.g. Python" aria-label="New skill">
+        <button type="button" id="skill-add" class="btn btn-outline-primary" aria-label="Add skill">+</button>
+    </div>
+    <div class="text-danger small">{{ form.skills.errors }}</div>
+
+    {# ---------- Education: exactly one box ---------- #}
     <h4 class="mt-4">Education</h4>
     {{ education_fs.management_form }}
-    {% for edu_form in education_fs %}
+    <div class="text-danger small">{{ education_fs.non_form_errors }}</div>
+    {% for entry in education_fs %}
         <div class="border rounded p-3 mb-2">
-            {{ edu_form.id }}
-            {{ edu_form.as_p }}
+            {% include "profiles/_entry_fields.html" with entry=entry %}
         </div>
     {% endfor %}
 
-    <h4 class="mt-4">Work Experience</h4>
+    {# ---------- Work experience: unlimited, added with + ---------- #}
+    <div class="d-flex align-items-center justify-content-between mt-4 mb-2">
+        <h4 class="mb-0">Work Experience</h4>
+        <button type="button" class="btn btn-outline-primary btn-sm" data-add-entry="exp" aria-label="Add work experience">+ Add experience</button>
+    </div>
     {{ experience_fs.management_form }}
-    {% for exp_form in experience_fs %}
-        <div class="border rounded p-3 mb-2">
-            {{ exp_form.id }}
-            {{ exp_form.as_p }}
+    <div class="text-danger small">{{ experience_fs.non_form_errors }}</div>
+    <div id="exp-entries">
+        {% for entry in experience_fs %}
+            <div class="entry-card border rounded p-3 mb-2" data-entry>
+                <button type="button" class="btn-close" data-remove-entry aria-label="Remove experience"></button>
+                {% include "profiles/_entry_fields.html" with entry=entry %}
+            </div>
+        {% endfor %}
+    </div>
+    <p id="exp-empty-msg" class="text-muted small">No work experience yet. Click the plus button to add one.</p>
+    <template id="exp-template">
+        <div class="entry-card border rounded p-3 mb-2" data-entry data-new>
+            <button type="button" class="btn-close" data-remove-entry aria-label="Remove experience"></button>
+            {% include "profiles/_entry_fields.html" with entry=experience_fs.empty_form %}
         </div>
-    {% endfor %}
+    </template>
 
-    <h4 class="mt-4">Links</h4>
+    {# ---------- Links: unlimited, added with + ---------- #}
+    <div class="d-flex align-items-center justify-content-between mt-4 mb-2">
+        <h4 class="mb-0">Links</h4>
+        <button type="button" class="btn btn-outline-primary btn-sm" data-add-entry="link" aria-label="Add link">+ Add link</button>
+    </div>
     {{ link_fs.management_form }}
-    {% for link_form in link_fs %}
-        <div class="border rounded p-3 mb-2">
-            {{ link_form.id }}
-            {{ link_form.as_p }}
+    <div class="text-danger small">{{ link_fs.non_form_errors }}</div>
+    <div id="link-entries">
+        {% for entry in link_fs %}
+            <div class="entry-card border rounded p-3 mb-2" data-entry>
+                <button type="button" class="btn-close" data-remove-entry aria-label="Remove link"></button>
+                {% include "profiles/_entry_fields.html" with entry=entry %}
+            </div>
+        {% endfor %}
+    </div>
+    <p id="link-empty-msg" class="text-muted small">No links yet. Click the plus button to add one.</p>
+    <template id="link-template">
+        <div class="entry-card border rounded p-3 mb-2" data-entry data-new>
+            <button type="button" class="btn-close" data-remove-entry aria-label="Remove link"></button>
+            {% include "profiles/_entry_fields.html" with entry=link_fs.empty_form %}
         </div>
-    {% endfor %}
-
-    <h4 class="mt-4">Privacy (US-5)</h4>
-    <p class="text-muted">Controls what recruiters can see. Enforced by <code>profiles.privacy.get_visible_profile_data</code>.</p>
-    {% for field in form %}
-        {% if field.name in "is_public_to_recruiters,show_contact_info,show_education,show_experience,show_links,show_location" %}
-        <div class="form-check mb-2">
-            {{ field }}
-            <label class="form-check-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-        </div>
-        {% endif %}
-    {% endfor %}
+    </template>
 
     <button type="submit" class="btn btn-primary mt-3">Save Profile</button>
 </form>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+(function () {
+    const form = document.getElementById("profile-form");
+
+    // Enter no longer submits the form or adds anything. Only the + buttons
+    // add items and only "Save Profile" submits. Textareas still get newlines.
+    form.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" && e.target.tagName === "INPUT") {
+            e.preventDefault();
+        }
+    });
+
+    // ---------- Skills ----------
+    // The chips are the UI. The hidden "skills" input holds the same list as
+    // comma-separated text, which is what the Django form reads on save.
+    const hidden = document.getElementById("{{ form.skills.id_for_label }}");
+    const chipBox = document.getElementById("skill-chips");
+    const skillInput = document.getElementById("skill-input");
+    let skills = hidden.value.split(",").map(s => s.trim()).filter(Boolean);
+
+    function renderSkills() {
+        chipBox.innerHTML = "";
+        skills.forEach(function (name, i) {
+            const chip = document.createElement("span");
+            chip.className = "skill-chip";
+            chip.textContent = name;  // textContent, so skill text is never parsed as HTML
+            const x = document.createElement("button");
+            x.type = "button";
+            x.className = "btn-close";
+            x.setAttribute("aria-label", "Remove " + name);
+            x.addEventListener("click", function () {
+                skills.splice(i, 1);
+                renderSkills();
+            });
+            chip.appendChild(x);
+            chipBox.appendChild(chip);
+        });
+        hidden.value = skills.join(", ");
+    }
+
+    document.getElementById("skill-add").addEventListener("click", function () {
+        // Allow "Python, SQL" to add two chips at once. Skip duplicates.
+        skillInput.value.split(",").map(s => s.trim()).filter(Boolean).forEach(function (name) {
+            const exists = skills.some(s => s.toLowerCase() === name.toLowerCase());
+            if (!exists) skills.push(name);
+        });
+        skillInput.value = "";
+        skillInput.focus();
+        renderSkills();
+    });
+    renderSkills();
+
+    // ---------- Experience and links (Django formsets) ----------
+    // Each <template> holds Django's "empty_form", whose field names contain
+    // the placeholder __prefix__ (e.g. exp-__prefix__-company). The + button
+    // copies it, swaps __prefix__ for the next index, puts it at the top of
+    // the list, and bumps
+    // the management form's TOTAL_FORMS so Django knows to read the new row.
+    function refreshEmptyMsg(prefix) {
+        const count = document.querySelectorAll("#" + prefix + "-entries [data-entry]:not(.d-none)").length;
+        document.getElementById(prefix + "-empty-msg").classList.toggle("d-none", count > 0);
+    }
+
+    document.querySelectorAll("[data-add-entry]").forEach(function (btn) {
+        const prefix = btn.dataset.addEntry;
+        btn.addEventListener("click", function () {
+            const total = document.getElementById("id_" + prefix + "-TOTAL_FORMS");
+            const index = parseInt(total.value, 10);
+            const html = document.getElementById(prefix + "-template").innerHTML
+                .replace(/__prefix__/g, index);
+            document.getElementById(prefix + "-entries").insertAdjacentHTML("afterbegin", html);
+            total.value = index + 1;
+            refreshEmptyMsg(prefix);
+            const newest = document.querySelector("#" + prefix + "-entries [data-entry]");
+            const first = newest.querySelector("input:not([type=hidden]), textarea");
+            if (first) first.focus();
+        });
+        refreshEmptyMsg(prefix);
+    });
+
+    // X on an entry. Saved rows are hidden and their DELETE box is ticked,
+    // so Django deletes them on save. Rows added in this visit are removed
+    // outright; Django skips the missing index because it has no data.
+    form.addEventListener("click", function (e) {
+        const btn = e.target.closest("[data-remove-entry]");
+        if (!btn) return;
+        const card = btn.closest("[data-entry]");
+        const list = card.parentElement;
+        if (card.hasAttribute("data-new")) {
+            card.remove();
+        } else {
+            const del = card.querySelector("input[name$='-DELETE']");
+            if (del) del.checked = true;
+            card.classList.add("d-none");
+        }
+        refreshEmptyMsg(list.id.replace("-entries", ""));
+    });
+})();
+</script>
 {% endblock %}

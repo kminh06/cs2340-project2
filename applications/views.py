@@ -54,9 +54,9 @@ def applicant_detail(request, application_id):
     TODO(US-20): Load the Application (404 if its job isn't owned by
     request.user), then use
     ``profiles.privacy.get_visible_profile_data(applicant.seeker_profile,
-    viewer=request.user)`` to render only what the seeker's privacy settings
-    (US-5) allow, alongside the tailored note, status, and status-change
-    history for this application.
+    viewer=request.user)`` to render the profile alongside the tailored note,
+    status, and status-change history for this application. (US-5 privacy is
+    not implemented yet, so that helper currently returns everything.)
     """
     application = get_object_or_404(
         Application, pk=application_id, job__posted_by=request.user

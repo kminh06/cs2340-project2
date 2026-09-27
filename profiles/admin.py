@@ -20,8 +20,7 @@ class LinkInline(admin.TabularInline):
 
 @admin.register(JobSeekerProfile)
 class JobSeekerProfileAdmin(admin.ModelAdmin):
-    list_display = ("user", "headline", "location_text", "is_public_to_recruiters", "updated_at")
-    list_filter = ("is_public_to_recruiters", "show_contact_info")
+    list_display = ("user", "headline", "location_text", "updated_at")
     search_fields = ("user__username", "headline", "location_text")
     filter_horizontal = ("skills",)
     inlines = [EducationInline, ExperienceInline, LinkInline]
