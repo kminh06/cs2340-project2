@@ -1,7 +1,11 @@
 import csv
 
+from django.contrib import messages
+from django.db.models import Count, Q
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils.http import url_has_allowed_host_and_scheme
+from django.views.decorators.http import require_POST
 
 from accounts.decorators import admin_required
 from jobs.models import Job
@@ -54,27 +58,87 @@ def report_detail(request, report_id):
     return render(request, "moderation/report_detail.html", {"report": report})
 
 
+OPEN_REPORT_STATUSES = [Report.Status.OPEN, Report.Status.UNDER_REVIEW]
+
+
 @admin_required
 def job_moderation_list(request):
-    """US-22: moderate/remove job posts.
+    """US-22: Administrators view all job posts (active and inactive),
+    filtered by search/status/reported, with jobs that have open reports
+    highlighted.
 
-    TODO(US-22): List all jobs (active and inactive) with a toggle/action to
-    deactivate (set is_active=False) or permanently delete a posting that
-    violates policy. Highlight jobs that have open Reports against them.
+    Each row posts to ``job_deactivate``/``job_reactivate``/``job_delete``.
     """
-    jobs = Job.objects.all()
-    return render(request, "moderation/job_moderation_list.html", {"jobs": jobs})
+    jobs = Job.objects.select_related("posted_by").annotate(
+        open_reports=Count(
+            "reports_against", filter=Q(reports_against__status__in=OPEN_REPORT_STATUSES)
+        )
+    )
+    q = request.GET.get("q", "").strip()
+    status = request.GET.get("status", "")
+    reported = request.GET.get("reported", "")
+    if q:
+        jobs = jobs.filter(
+            Q(title__icontains=q) | Q(company__icontains=q) | Q(posted_by__username__icontains=q)
+        )
+    if status == "active":
+        jobs = jobs.filter(is_active=True)
+    elif status == "inactive":
+        jobs = jobs.filter(is_active=False)
+    if reported:
+        jobs = jobs.filter(open_reports__gt=0)
+    return render(request, "moderation/job_moderation_list.html", {
+        "jobs": jobs,
+        "q": q,
+        "status": status,
+        "reported": reported,
+    })
 
 
+def _back_to_list(request):
+    next_url = request.POST.get("next", "")
+    if url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
+        return redirect(next_url)
+    return redirect("moderation:job_moderation_list")
+
+
+def _set_job_active(request, job_id, active):
+    job = get_object_or_404(Job, pk=job_id)
+    job.is_active = active
+    job.save(update_fields=["is_active", "updated_at"])
+    verb = "Reactivated" if active else "Deactivated"
+    messages.success(request, f'{verb} "{job.title}".')
+    return _back_to_list(request)
+
+
+@require_POST
 @admin_required
 def job_deactivate(request, job_id):
-    """US-22: deactivate (soft-remove) a job post.
+    """US-22: deactivate (soft-remove) a job post so it no longer appears in
+    search, recommendations, or the map, and can't be applied to."""
+    return _set_job_active(request, job_id, False)
 
-    TODO(US-22): On POST, set ``job.is_active = False`` and save; redirect
-    back to job_moderation_list with a confirmation message.
+
+@require_POST
+@admin_required
+def job_reactivate(request, job_id):
+    """US-22: undo a deactivation that turned out to be a mistake."""
+    return _set_job_active(request, job_id, True)
+
+
+@require_POST
+@admin_required
+def job_delete(request, job_id):
+    """US-22: permanently delete a posting that violates policy (spam/abuse).
+
+    This also deletes its applications and reports, so prefer deactivating
+    unless the post should be gone entirely.
     """
     job = get_object_or_404(Job, pk=job_id)
-    return redirect("moderation:job_moderation_list")
+    title = job.title
+    job.delete()
+    messages.success(request, f'Deleted "{title}".')
+    return _back_to_list(request)
 
 
 @admin_required

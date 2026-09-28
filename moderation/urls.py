@@ -10,5 +10,7 @@ urlpatterns = [
     path("reports/<int:report_id>/", views.report_detail, name="report_detail"),
     path("jobs/", views.job_moderation_list, name="job_moderation_list"),
     path("jobs/<int:job_id>/deactivate/", views.job_deactivate, name="job_deactivate"),
+    path("jobs/<int:job_id>/reactivate/", views.job_reactivate, name="job_reactivate"),
+    path("jobs/<int:job_id>/delete/", views.job_delete, name="job_delete"),
     path("export/", views.export_csv, name="export_csv"),
 ]

@@ -2,20 +2,73 @@
 {% block title %}Moderate Job Posts{% endblock %}
 {% block content %}
 <h1>Moderate Job Posts</h1>
-<p class="text-muted">US-22 stub: deactivate/remove postings that violate policy. See <code>moderation/views.py:job_moderation_list</code>.</p>
-<table class="table">
-    <thead><tr><th>Title</th><th>Company</th><th>Posted By</th><th>Active</th><th></th></tr></thead>
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-5">
+        <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="Search title, company, or poster">
+    </div>
+    <div class="col-md-2">
+        <select name="status" class="form-select">
+            <option value="">Any status</option>
+            <option value="active" {% if status == "active" %}selected{% endif %}>Active</option>
+            <option value="inactive" {% if status == "inactive" %}selected{% endif %}>Inactive</option>
+        </select>
+    </div>
+    <div class="col-md-3 d-flex align-items-center">
+        <div class="form-check">
+            <input type="checkbox" name="reported" value="1" id="reported" class="form-check-input" {% if reported %}checked{% endif %}>
+            <label for="reported" class="form-check-label">Only jobs with open reports</label>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <button type="submit" class="btn btn-primary w-100">Filter</button>
+    </div>
+</form>
+
+<table class="table align-middle">
+    <thead>
+        <tr><th>Title</th><th>Company</th><th>Posted By</th><th>Posted</th><th>Status</th><th>Open Reports</th><th></th></tr>
+    </thead>
     <tbody>
         {% for job in jobs %}
-        <tr>
-            <td>{{ job.title }}</td>
+        <tr {% if job.open_reports %}class="table-warning"{% endif %}>
+            <td><a href="{% url 'jobs:job_detail' job.id %}">{{ job.title }}</a></td>
             <td>{{ job.company }}</td>
             <td>{{ job.posted_by.username }}</td>
-            <td>{{ job.is_active }}</td>
-            <td><a href="{% url 'moderation:job_deactivate' job.id %}">Deactivate</a></td>
+            <td>{{ job.created_at|date:"Y-m-d" }}</td>
+            <td>
+                {% if job.is_active %}<span class="badge bg-success">Active</span>
+                {% else %}<span class="badge bg-secondary">Inactive</span>{% endif %}
+            </td>
+            <td>
+                {% if job.open_reports %}
+                <a href="{% url 'moderation:report_list' %}" class="badge bg-danger text-decoration-none">{{ job.open_reports }}</a>
+                {% else %}0{% endif %}
+            </td>
+            <td class="text-nowrap">
+                {% if job.is_active %}
+                <form method="post" action="{% url 'moderation:job_deactivate' job.id %}" class="d-inline">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                    <button type="submit" class="btn btn-sm btn-outline-warning">Deactivate</button>
+                </form>
+                {% else %}
+                <form method="post" action="{% url 'moderation:job_reactivate' job.id %}" class="d-inline">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                    <button type="submit" class="btn btn-sm btn-outline-success">Reactivate</button>
+                </form>
+                {% endif %}
+                <form method="post" action="{% url 'moderation:job_delete' job.id %}" class="d-inline"
+                      onsubmit="return confirm('Permanently delete this job post and all of its applications?');">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                    <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                </form>
+            </td>
         </tr>
         {% empty %}
-        <tr><td colspan="5">No jobs posted.</td></tr>
+        <tr><td colspan="7">No job posts match these filters.</td></tr>
         {% endfor %}
     </tbody>
 </table>

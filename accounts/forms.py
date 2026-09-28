@@ -32,3 +32,11 @@ class SignUpForm(UserCreationForm):
         if commit:
             user.save()
         return user
+
+
+class ManageUserForm(forms.ModelForm):
+    """US-21: lets an Administrator change a user's role and active status."""
+
+    class Meta:
+        model = User
+        fields = ["role", "is_active"]

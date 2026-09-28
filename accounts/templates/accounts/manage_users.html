@@ -2,20 +2,70 @@
 {% block title %}Manage Users{% endblock %}
 {% block content %}
 <h1>Manage Users</h1>
-<p class="text-muted">US-21 stub: promote/demote roles, deactivate accounts. See <code>accounts/views.py:manage_users</code>.</p>
-<table class="table table-striped">
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-5">
+        <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="Search username or email">
+    </div>
+    <div class="col-md-3">
+        <select name="role" class="form-select">
+            <option value="">All roles</option>
+            {% for value, label in roles %}
+            <option value="{{ value }}" {% if value == role %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-md-2">
+        <select name="status" class="form-select">
+            <option value="">Any status</option>
+            <option value="active" {% if status == "active" %}selected{% endif %}>Active</option>
+            <option value="inactive" {% if status == "inactive" %}selected{% endif %}>Inactive</option>
+        </select>
+    </div>
+    <div class="col-md-2">
+        <button type="submit" class="btn btn-primary w-100">Filter</button>
+    </div>
+</form>
+
+<table class="table table-striped align-middle">
     <thead>
-        <tr><th>Username</th><th>Email</th><th>Role</th><th>Active</th><th>Joined</th></tr>
+        <tr><th>Username</th><th>Email</th><th>Joined</th><th>Role</th><th>Status</th><th></th></tr>
     </thead>
     <tbody>
         {% for u in users %}
         <tr>
             <td>{{ u.username }}</td>
             <td>{{ u.email }}</td>
-            <td>{{ u.get_role_display }}</td>
-            <td>{{ u.is_active }}</td>
             <td>{{ u.date_joined|date:"Y-m-d" }}</td>
+            {% if u == request.user %}
+            <td>{{ u.get_role_display }}</td>
+            <td>{% if u.is_active %}Active{% else %}Inactive{% endif %}</td>
+            <td class="text-muted">(you)</td>
+            {% else %}
+            <td>
+                <select name="role" form="user-{{ u.id }}" class="form-select form-select-sm">
+                    {% for value, label in roles %}
+                    <option value="{{ value }}" {% if value == u.role %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td>
+                <div class="form-check">
+                    <input type="checkbox" name="is_active" form="user-{{ u.id }}" id="active-{{ u.id }}" class="form-check-input" {% if u.is_active %}checked{% endif %}>
+                    <label for="active-{{ u.id }}" class="form-check-label">Active</label>
+                </div>
+            </td>
+            <td>
+                <form method="post" action="{% url 'accounts:update_user' u.id %}" id="user-{{ u.id }}">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                    <button type="submit" class="btn btn-sm btn-outline-primary">Save</button>
+                </form>
+            </td>
+            {% endif %}
         </tr>
+        {% empty %}
+        <tr><td colspan="6">No users match these filters.</td></tr>
         {% endfor %}
     </tbody>
 </table>
