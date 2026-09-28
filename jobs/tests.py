@@ -37,6 +37,8 @@ class JobFormPageTests(TestCase):
         self.assertIn('<select name="visa_sponsorship"', html)
         self.assertIn('<select name="is_active"', html)
         self.assertIn('id="skill-add"', html)
+        self.assertIn(">Location</label>", html)
+        self.assertNotIn("Office address", html)
         self.assertIn('type="hidden" name="skills"', html)
 
     def test_new_job_defaults(self):

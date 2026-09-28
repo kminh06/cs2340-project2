@@ -46,8 +46,12 @@ class JobForm(forms.ModelForm):
             "visa_sponsorship",
             "is_active",
         ]
+        labels = {
+            "office_address": "Location",
+        }
         widgets = {
             "description": forms.Textarea(attrs={"rows": 6}),
+            "office_address": forms.TextInput(attrs={"placeholder": "e.g. Atlanta, GA"}),
         }
 
     def __init__(self, *args, **kwargs):

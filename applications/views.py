@@ -12,6 +12,10 @@ from .models import Application
 def apply_to_job(request, job_id):
     """US-3: One-click apply with a tailored note."""
     job = get_object_or_404(Job, pk=job_id)
+    # Inactive jobs take no applications, even if the seeker has a direct link.
+    if not job.is_active:
+        messages.error(request, "This job is no longer accepting applications.")
+        return redirect("jobs:job_detail", pk=job.pk)
     if Application.objects.filter(job=job,applicant=request.user).exists():
         messages.warning(request, "You already applied for this job.")
         return redirect("applications:my_applications")
