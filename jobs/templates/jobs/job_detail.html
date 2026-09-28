@@ -14,7 +14,11 @@
 
 {% if user.is_authenticated and user.is_job_seeker %}
 <div class="mt-4">
-    <a class="btn btn-primary" href="{% url 'applications:apply_to_job' job.id %}">Apply (US-3)</a>
+    {% if job.is_active %}
+        <a class="btn btn-primary" href="{% url 'applications:apply_to_job' job.id %}">Apply</a>
+    {% else %}
+        <span class="text-muted me-2">This job is no longer accepting applications.</span>
+    {% endif %}
     <a class="btn btn-outline-secondary" href="{% url 'cart:add_job' job.id %}">Save to Cart (US-10)</a>
 </div>
 {% endif %}

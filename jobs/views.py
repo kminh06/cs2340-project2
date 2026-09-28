@@ -13,12 +13,10 @@ def job_search(request):
     """US-2: Job seekers (and anyone) search/filter jobs by title, skills,
     location, salary range, remote/on-site/hybrid, and visa sponsorship.
 
-    TODO(US-2): Bind ``JobSearchForm`` to ``request.GET``, and when valid
-    call ``jobs.services.search_jobs(form.cleaned_data)`` to get the
-    queryset. Render results in the template with pagination. Link each
-    result to ``jobs:job_detail`` and to ``cart:add_job`` (US-10).
+    The form is always bound, so opening the page with no filters is a
+    valid empty search and lists every active job.
     """
-    form = JobSearchForm(request.GET or None)
+    form = JobSearchForm(request.GET)
     if form.is_valid():
         jobs=search_jobs(form.cleaned_data)
     else:

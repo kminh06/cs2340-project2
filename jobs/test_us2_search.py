@@ -50,7 +50,8 @@ class JobSearchUS2Tests(TestCase):
         self.assertEqual(set(self.search(location="atlanta")), {self.backend, self.exact})
 
     def test_salary_range_filter(self):
-        self.assertEqual(self.search(salary_min=100000, salary_max=200000)[0:1], [self.backend])
+        self.assertEqual(set(self.search(salary_min=100000, salary_max=200000)),
+                         {self.backend, self.open_ended})
         self.assertEqual(self.search(salary_max=70000), [self.frontend])
 
     def test_work_type_filter(self):
@@ -67,6 +68,20 @@ class JobSearchUS2Tests(TestCase):
                         work_type="REMOTE", visa_sponsorship="on"),
             [self.backend],
         )
+
+    def test_landing_page_without_filters_lists_all_active_jobs(self):
+        results = self.search()
+        self.assertEqual(set(results), {self.backend, self.frontend, self.exact, self.open_ended})
+
+    def test_salary_min_includes_open_ended_jobs(self):
+        # "$150,000+" (no max) matches "at least $150,000" and "at least $100,000".
+        self.assertIn(self.open_ended, self.search(salary_min=150000))
+        self.assertIn(self.open_ended, self.search(salary_min=100000))
+        # ...but not a search capped below its minimum.
+        self.assertNotIn(self.open_ended, self.search(salary_max=100000))
+
+    def test_salary_filter_skips_jobs_with_no_salary(self):
+        self.assertNotIn(self.exact, self.search(salary_min=1))
 
     def test_inactive_jobs_hidden(self):
         self.assertNotIn(self.inactive, self.search(title="backend"))

@@ -59,3 +59,15 @@ class ApplyUS3Tests(TestCase):
         self.assertEqual(resp.status_code, 302)
         self.assertIn("login", resp.url)
         self.assertEqual(Application.objects.count(), 0)
+
+    def test_cannot_apply_to_inactive_job_even_with_direct_link(self):
+        self.job.is_active = False
+        self.job.save()
+        self.client.login(username="seek", password="pw")
+        detail = reverse("jobs:job_detail", args=[self.job.pk])
+        for resp in (self.client.get(self.url), self.client.post(self.url, {"tailored_note": "x"})):
+            self.assertRedirects(resp, detail)
+        self.assertEqual(Application.objects.count(), 0)
+        page = self.client.get(detail)
+        self.assertNotContains(page, self.url)
+        self.assertContains(page, "no longer accepting applications")
