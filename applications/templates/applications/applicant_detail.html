@@ -1,21 +1,201 @@
 {% extends "base.html" %}
-{% block title %}Applicant Detail{% endblock %}
+
+{% block title %}Applicant Details{% endblock %}
+
 {% block content %}
-<h1>Applicant: {{ application.applicant.username }}</h1>
-<p class="text-muted">US-20 stub: candidate profile + application details in one place. Profile fields below go through <code>profiles.privacy.get_visible_profile_data</code> (US-5, not implemented yet).</p>
 
-<h4>Application</h4>
-<p><strong>Job:</strong> {{ application.job.title }}</p>
-<p><strong>Status:</strong> {{ application.get_status_display }}</p>
-<p><strong>Tailored note:</strong> {{ application.tailored_note|default:"(none)" }}</p>
+<h1 class="mb-4">
+    Applicant: {{ application.applicant.username }}
+</h1>
 
-<h4>Profile</h4>
-{% if visible_profile.visible %}
-    <p><strong>Headline:</strong> {{ visible_profile.headline }}</p>
-    <p><strong>Summary:</strong> {{ visible_profile.summary }}</p>
-    {% if visible_profile.location_text %}<p><strong>Location:</strong> {{ visible_profile.location_text }}</p>{% endif %}
-    {% if visible_profile.contact_email %}<p><strong>Contact:</strong> {{ visible_profile.contact_email }}</p>{% endif %}
-{% else %}
-    <p>This candidate's profile is not available.</p>
-{% endif %}
+<div class="row">
+
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h4 class="mb-0">Candidate Profile</h4>
+            </div>
+
+            <div class="card-body">
+
+                {% if visible_profile.visible %}
+
+                    <p>
+                        <strong>Email:</strong>
+                        {{ visible_profile.contact_email|default:"Not provided" }}
+                    </p>
+
+                    <p>
+                        <strong>Headline:</strong>
+                        {{ visible_profile.headline|default:"Not provided" }}
+                    </p>
+
+                    <p>
+                        <strong>Location:</strong>
+                        {{ visible_profile.location_text|default:"Not provided" }}
+                    </p>
+
+                    <p>
+                        <strong>Summary:</strong><br>
+                        {{ visible_profile.summary|default:"No summary provided." }}
+                    </p>
+
+                    <hr>
+
+                    <h5>Skills</h5>
+
+                    {% for skill in visible_profile.skills %}
+                        <span class="badge bg-secondary mb-1">
+                            {{ skill.name }}
+                        </span>
+                    {% empty %}
+                        <p class="text-muted">No skills listed.</p>
+                    {% endfor %}
+
+                    <hr>
+
+                    <h5>Education</h5>
+
+                    {% for education in visible_profile.education_entries %}
+                        <div class="mb-3">
+                            <strong>{{ education.school }}</strong>
+
+                            {% if education.degree %}
+                                <br>{{ education.degree }}
+                            {% endif %}
+
+                            {% if education.field_of_study %}
+                                in {{ education.field_of_study }}
+                            {% endif %}
+
+                            {% if education.description %}
+                                <br>
+                                <small class="text-muted">
+                                    {{ education.description }}
+                                </small>
+                            {% endif %}
+                        </div>
+                    {% empty %}
+                        <p class="text-muted">
+                            No education information provided.
+                        </p>
+                    {% endfor %}
+
+                    <hr>
+
+                    <h5>Experience</h5>
+
+                    {% for experience in visible_profile.experience_entries %}
+                        <div class="mb-3">
+                            <strong>{{ experience.title }}</strong>
+                            at {{ experience.company }}
+
+                            {% if experience.location %}
+                                <br>{{ experience.location }}
+                            {% endif %}
+
+                            {% if experience.description %}
+                                <br>
+                                <small class="text-muted">
+                                    {{ experience.description }}
+                                </small>
+                            {% endif %}
+                        </div>
+                    {% empty %}
+                        <p class="text-muted">
+                            No experience information provided.
+                        </p>
+                    {% endfor %}
+
+                    <hr>
+
+                    <h5>Links</h5>
+
+                    {% for link in visible_profile.links %}
+                        <p>
+                            <a href="{{ link.url }}"
+                               target="_blank"
+                               rel="noopener noreferrer">
+                                {{ link.label }}
+                            </a>
+                        </p>
+                    {% empty %}
+                        <p class="text-muted">
+                            No links provided.
+                        </p>
+                    {% endfor %}
+
+                {% else %}
+
+                    <div class="alert alert-secondary">
+                        This candidate's profile is not available.
+                    </div>
+
+                {% endif %}
+
+            </div>
+        </div>
+    </div>
+
+
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h4 class="mb-0">Application Details</h4>
+            </div>
+
+            <div class="card-body">
+
+                <p>
+                    <strong>Job:</strong>
+                    {{ application.job.title }}
+                </p>
+
+                <p>
+                    <strong>Company:</strong>
+                    {{ application.job.company }}
+                </p>
+
+                <p>
+                    <strong>Status:</strong>
+                    <span class="badge bg-primary">
+                        {{ application.get_status_display }}
+                    </span>
+                </p>
+
+                <p>
+                    <strong>Applied:</strong>
+                    {{ application.created_at|date:"F j, Y" }}
+                </p>
+
+                <p>
+                    <strong>Last Updated:</strong>
+                    {{ application.updated_at|date:"F j, Y" }}
+                </p>
+
+                <hr>
+
+                <h5>Tailored Note</h5>
+
+                {% if application.tailored_note %}
+                    <p>{{ application.tailored_note|linebreaks }}</p>
+                {% else %}
+                    <p class="text-muted">
+                        No tailored note was provided.
+                    </p>
+                {% endif %}
+
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<a
+    class="btn btn-outline-secondary"
+    href="{% url 'applications:pipeline' %}"
+>
+    Back to Pipeline
+</a>
+
 {% endblock %}
